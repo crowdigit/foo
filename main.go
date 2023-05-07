@@ -1,5 +1,9 @@
 package main
 
+import (
+	"fmt"
+)
+
 const (
 	EMPTY  = 0
 	PLAYER = 1
@@ -19,29 +23,52 @@ func (p Player) Position() (int, int) {
 }
 
 func main() {
-	tiles := []string{".", "x"}
+	tiles := []byte{'.', 'x'}
+
+	player := Player{x: 0, y: 0}
 
 	objects := map[string]Object{
-		"player":  Player{x: 0, y: 0},
+		"player":  &player,
 		"monster": Player{x: 9, y: 9},
 	}
 
-	render := [10][10]string{}
-	for y, row := range render {
-		for x := range row {
-			render[x][y] = tiles[EMPTY]
+loop:
+	for {
+		render := [10][10]byte{}
+		for y, row := range render {
+			for x := range row {
+				render[y][x] = tiles[EMPTY]
+			}
 		}
-	}
 
-	for _, object := range objects {
-		x, y := object.Position()
-		render[x][y] = tiles[PLAYER]
-	}
-
-	for _, row := range render {
-		for _, cell := range row {
-			print(cell)
+		for _, object := range objects {
+			x, y := object.Position()
+			render[y][x] = tiles[PLAYER]
 		}
-		println()
+
+		for y := len(render) - 1; y >= 0; y -= 1 {
+			for _, cell := range render[y] {
+				fmt.Printf("%c", cell)
+			}
+			println()
+		}
+
+		var cmd string
+		if n, err := fmt.Scanf("%s", &cmd); err != nil || n != 1 {
+			panic(err)
+		}
+
+		switch string(cmd) {
+		case "up":
+			player.y += 1
+		case "down":
+			player.y -= 1
+		case "left":
+			player.x -= 1
+		case "right":
+			player.x += 1
+		case "exit":
+			break loop
+		}
 	}
 }
