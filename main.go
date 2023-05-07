@@ -2,11 +2,16 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"os/exec"
 )
 
 const (
 	EMPTY  = 0
 	PLAYER = 1
+
+	MAP_WIDTH  = 10
+	MAP_HEIGHT = 10
 )
 
 type Object interface {
@@ -22,6 +27,20 @@ func (p Player) Position() (int, int) {
 	return p.x, p.y
 }
 
+func Min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func Max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
 func main() {
 	tiles := []byte{'.', 'x'}
 
@@ -34,7 +53,7 @@ func main() {
 
 loop:
 	for {
-		render := [10][10]byte{}
+		render := [MAP_WIDTH][MAP_HEIGHT]byte{}
 		for y, row := range render {
 			for x := range row {
 				render[y][x] = tiles[EMPTY]
@@ -59,16 +78,20 @@ loop:
 		}
 
 		switch string(cmd) {
-		case "up":
-			player.y += 1
-		case "down":
-			player.y -= 1
-		case "left":
-			player.x -= 1
-		case "right":
-			player.x += 1
-		case "exit":
+		case "u":
+			player.y = Min(player.y+1, MAP_HEIGHT-1)
+		case "d":
+			player.y = Max(player.y-1, 0)
+		case "l":
+			player.x = Max(player.x-1, 0)
+		case "r":
+			player.x = Min(player.x+1, MAP_WIDTH-1)
+		case "q":
 			break loop
 		}
+
+		c := exec.Command("clear")
+		c.Stdout = os.Stdout
+		c.Run()
 	}
 }
