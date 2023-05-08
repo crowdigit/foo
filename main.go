@@ -13,10 +13,10 @@ const (
 
 	MAP_WIDTH     = 10
 	MAP_HEIGHT    = 10
-	MAP_GRID_SIZE = 40
+	MAP_GRID_SIZE = 30
 
 	RENDER_CENTER_OFFSET_X = SCREEN_WIDTH/2 - MAP_GRID_SIZE*MAP_WIDTH/2
-	RENDER_CENTER_OFFSET_Y = SCREEN_HEIGHT/2 - MAP_GRID_SIZE*MAP_HEIGHT/2
+	RENDER_CENTER_OFFSET_Y = SCREEN_HEIGHT/2 - MAP_GRID_SIZE*MAP_HEIGHT/2 - MAP_GRID_SIZE*3
 )
 
 type Object interface {
@@ -29,6 +29,7 @@ type Player struct {
 	y int
 
 	r, g, b uint8
+	speed   int
 }
 
 func (p Player) Position() (int, int) {
@@ -81,10 +82,10 @@ func main() {
 	}
 	defer renderer.Destroy()
 
-	player := Player{x: 0, y: 0, r: 255, g: 255, b: 255}
+	player := Player{x: 0, y: 0, r: 0, g: 0, b: 255, speed: 1}
 	objects := map[string]Object{
 		"player":  &player,
-		"monster": Player{x: 9, y: 9, r: 255, g: 0, b: 0},
+		"monster": Player{x: 6, y: 6, r: 255, g: 0, b: 0, speed: 1},
 	}
 
 	// Define field grids
