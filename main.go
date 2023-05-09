@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
@@ -19,50 +20,6 @@ const (
 	RENDER_CENTER_OFFSET_Y = SCREEN_HEIGHT/2 - MAP_GRID_SIZE*MAP_HEIGHT/2 - MAP_GRID_SIZE*3
 )
 
-type Object interface {
-	Position() (int, int)
-	Render(*sdl.Renderer)
-}
-
-type Player struct {
-	x int
-	y int
-
-	r, g, b uint8
-	speed   int
-}
-
-func (p Player) Position() (int, int) {
-	return p.x, p.y
-}
-
-func (p Player) Render(renderer *sdl.Renderer) {
-	rect := sdl.Rect{
-		X: int32(p.x)*MAP_GRID_SIZE + RENDER_CENTER_OFFSET_X,
-		Y: int32(-p.y+MAP_HEIGHT-1)*MAP_GRID_SIZE + RENDER_CENTER_OFFSET_Y,
-		W: MAP_GRID_SIZE,
-		H: MAP_GRID_SIZE,
-	}
-	renderer.SetDrawColor(p.r, p.g, p.b, 0)
-	if err := renderer.FillRect(&rect); err != nil {
-		panic(err)
-	}
-}
-
-func Min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
-
-func Max(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
-}
-
 func main() {
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
 		panic(err)
@@ -70,23 +27,37 @@ func main() {
 	defer sdl.Quit()
 
 	window, err := sdl.CreateWindow("test", sdl.WINDOWPOS_UNDEFINED,
-		sdl.WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, sdl.WINDOW_SHOWN)
+		sdl.WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, sdl.WINDOW_SHOWN|sdl.WINDOW_OPENGL)
 	if err != nil {
 		panic(err)
 	}
 	defer window.Destroy()
 
-	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED)
+	sdl.GLSetAttribute(sdl.GL_CONTEXT_MAJOR_VERSION, 3)
+	sdl.GLSetAttribute(sdl.GL_CONTEXT_MINOR_VERSION, 3)
+
+	glContext, err := window.GLCreateContext()
 	if err != nil {
 		panic(err)
 	}
-	defer renderer.Destroy()
+	defer sdl.GLDeleteContext(glContext)
+
+	if err := gl.Init(); err != nil {
+		panic(err)
+	}
+
+	_, err = loadShader()
+	if err != nil {
+		panic(err)
+	}
 
 	player := Player{x: 0, y: 0, r: 0, g: 0, b: 255, speed: 1}
-	objects := map[string]Object{
-		"player":  &player,
-		"monster": Player{x: 6, y: 6, r: 255, g: 0, b: 0, speed: 1},
-	}
+	/*
+		objects := map[string]Object{
+			"player":  &player,
+			"monster": Player{x: 6, y: 6, r: 255, g: 0, b: 0, speed: 1},
+		}
+	*/
 
 	// Define field grids
 	fieldRects := make([]sdl.Rect, MAP_HEIGHT*MAP_WIDTH)
@@ -100,6 +71,14 @@ func main() {
 			}
 		}
 	}
+
+	/*
+		matProj := mat.NewDense(3, 3, []float64{
+			2.0 / SCREEN_WIDTH, 0, -1,
+			0, 2.0 / SCREEN_HEIGHT, -1,
+			0, 0, 1,
+		})
+	*/
 
 	running := true
 	for running {
@@ -126,15 +105,21 @@ func main() {
 			}
 		}
 
-		renderer.SetDrawColor(0, 0, 0, 0)
-		renderer.Clear()
+		gl.ClearColor(0.0, 0.0, 0.0, 0.0)
+		gl.Clear(gl.COLOR_BUFFER_BIT)
+		window.GLSwap()
 
-		for _, object := range objects {
-			object.Render(renderer)
-		}
+		/*
+			renderer.SetDrawColor(0, 0, 0, 0)
+			renderer.Clear()
 
-		renderer.SetDrawColor(255, 255, 255, 0)
-		renderer.DrawRects(fieldRects)
-		renderer.Present()
+			for _, object := range objects {
+				object.Render(renderer)
+			}
+
+			renderer.SetDrawColor(255, 255, 255, 0)
+			renderer.DrawRects(fieldRects)
+			renderer.Present()
+		*/
 	}
 }
