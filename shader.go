@@ -87,3 +87,31 @@ func loadShader() (uint32, error) {
 
 	return program, nil
 }
+
+func foo() error {
+	var vao uint32
+	gl.GenVertexArrays(1, &vao)
+	if vao == gl.INVALID_VALUE {
+		return errors.New("failed to create VAO")
+	}
+
+	gl.BindVertexArray(vao)
+
+	var vbo uint32
+	gl.GenBuffers(1, &vbo)
+	if vbo == gl.INVALID_VALUE {
+		return errors.New("failed to create VBO")
+	}
+
+	vertices := []float32{
+		0.0, 0.0, 1.0, 0.0, 0.0, 1.0,
+		1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
+	}
+	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
+	gl.BufferData(gl.ARRAY_BUFFER, len(vertices)*4, gl.Ptr(vertices), gl.STATIC_DRAW)
+
+	gl.VertexAttribPointerWithOffset(0, 2, gl.FLOAT, false, 2*4, 0)
+	gl.EnableVertexAttribArray(0)
+
+	return nil
+}

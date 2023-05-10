@@ -1,7 +1,10 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/go-gl/gl/v3.3-core/gl"
+	"github.com/go-gl/mathgl/mgl32"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
@@ -19,6 +22,22 @@ const (
 	RENDER_CENTER_OFFSET_X = SCREEN_WIDTH/2 - MAP_GRID_SIZE*MAP_WIDTH/2
 	RENDER_CENTER_OFFSET_Y = SCREEN_HEIGHT/2 - MAP_GRID_SIZE*MAP_HEIGHT/2 - MAP_GRID_SIZE*3
 )
+
+func checkGLError() {
+	err := gl.GetError()
+	switch err {
+	case gl.NO_ERROR:
+		fmt.Println("no OpenGL error")
+	case gl.INVALID_ENUM:
+		fmt.Println("GL_INVALID_ENUM")
+	case gl.INVALID_VALUE:
+		fmt.Println("GL_INVALID_VALUE")
+	case gl.INVALID_OPERATION:
+		fmt.Println("GL_INVALID_OPERATION")
+	default:
+		fmt.Println("unknown OpenGL error")
+	}
+}
 
 func main() {
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
@@ -46,8 +65,12 @@ func main() {
 		panic(err)
 	}
 
-	_, err = loadShader()
+	shader, err := loadShader()
 	if err != nil {
+		panic(err)
+	}
+
+	if err := foo(); err != nil {
 		panic(err)
 	}
 
@@ -72,13 +95,17 @@ func main() {
 		}
 	}
 
-	/*
-		matProj := mat.NewDense(3, 3, []float64{
-			2.0 / SCREEN_WIDTH, 0, -1,
-			0, 2.0 / SCREEN_HEIGHT, -1,
-			0, 0, 1,
-		})
-	*/
+	matProj := mgl32.Mat3{
+		2.0 / SCREEN_WIDTH, 0, -1,
+		0, 2.0 / SCREEN_HEIGHT, -1,
+		0, 0, 1,
+	}
+
+	matScale := mgl32.Scale2D(100, 100)
+	matProjModel := matProj.Mul3(matScale)
+
+	gl.UseProgram(shader)
+	uniformMatrix := gl.GetUniformLocation(shader, gl.Str("ProjModel"+"\x00"))
 
 	running := true
 	for running {
@@ -107,19 +134,16 @@ func main() {
 
 		gl.ClearColor(0.0, 0.0, 0.0, 0.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT)
+
+		gl.UniformMatrix3fv(uniformMatrix, 1, true, &matProjModel[0])
+		gl.DrawArrays(gl.TRIANGLES, 0, 6)
+
 		window.GLSwap()
 
 		/*
-			renderer.SetDrawColor(0, 0, 0, 0)
-			renderer.Clear()
-
 			for _, object := range objects {
 				object.Render(renderer)
 			}
-
-			renderer.SetDrawColor(255, 255, 255, 0)
-			renderer.DrawRects(fieldRects)
-			renderer.Present()
 		*/
 	}
 }
