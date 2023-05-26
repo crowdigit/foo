@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/go-gl/gl/v3.3-core/gl"
-	"github.com/go-gl/mathgl/mgl32"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
@@ -70,7 +69,8 @@ func main() {
 		panic(err)
 	}
 
-	if err := foo(); err != nil {
+	vao, err := initVAO()
+	if err != nil {
 		panic(err)
 	}
 
@@ -95,17 +95,14 @@ func main() {
 		}
 	}
 
-	matProj := mgl32.Mat3{
-		2.0 / SCREEN_WIDTH, 0, -1,
-		0, 2.0 / SCREEN_HEIGHT, -1,
-		0, 0, 1,
-	}
-
-	matScale := mgl32.Scale2D(100, 100)
-	matProjModel := matProj.Mul3(matScale)
-
 	gl.UseProgram(shader)
-	uniformMatrix := gl.GetUniformLocation(shader, gl.Str("ProjModel"+"\x00"))
+	pvmUniformLoc := gl.GetUniformLocation(shader, gl.Str("ProjModel"+"\x00"))
+
+	renderer := RectRenderer{
+		vao:           vao,
+		program:       shader,
+		pvmUniformLoc: pvmUniformLoc,
+	}
 
 	running := true
 	for running {
@@ -135,8 +132,7 @@ func main() {
 		gl.ClearColor(0.0, 0.0, 0.0, 0.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 
-		gl.UniformMatrix3fv(uniformMatrix, 1, true, &matProjModel[0])
-		gl.DrawArrays(gl.TRIANGLES, 0, 6)
+		player.Render(renderer)
 
 		window.GLSwap()
 
