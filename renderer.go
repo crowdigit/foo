@@ -21,9 +21,9 @@ func (r RectRenderer) VAO() uint32 {
 
 func (r RectRenderer) Proj() mgl32.Mat3 {
 	return mgl32.Mat3{
-		2.0 / SCREEN_WIDTH, 0, -1,
-		0, 2.0 / SCREEN_HEIGHT, -1,
-		0, 0, 1,
+		2.0 / SCREEN_WIDTH, 0, 0,
+		0, 2.0 / SCREEN_HEIGHT, 0,
+		-1, -1, 1,
 	}
 }
 
