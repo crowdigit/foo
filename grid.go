@@ -17,22 +17,24 @@ type Grid struct {
 	gridSize  float32
 }
 
-func (p Grid) Render(renderer Renderer) {
+func (o Grid) Render(renderer Renderer) {
 	gl.BindVertexArray(renderer.VAO())
 
-	gridScaleX := p.gridSize * float32(p.width)
-	gridScaleY := p.gridSize * float32(p.height)
+	gridScaleX := o.gridSize * float32(o.width)
+	gridScaleY := o.gridSize * float32(o.height)
+	r, g, b := normalizeColor(o.r, o.g, o.b)
 
 	gl.UseProgram(renderer.Program())
+	gl.Uniform3f(renderer.ColorUniformLoc(), r, g, b)
 
 	// draw vertical lines
 	{
-		scaleX := p.lineWidth
-		scaleY := gridScaleY + p.lineWidth
-		translateY := 1 / float32(2) * (SCREEN_HEIGHT - gridScaleY - p.lineWidth)
+		scaleX := o.lineWidth
+		scaleY := gridScaleY + o.lineWidth
+		translateY := 1 / float32(2) * (SCREEN_HEIGHT - gridScaleY - o.lineWidth)
 
-		for i := 0; i < p.width+1; i += 1 {
-			translateX := 1/float32(2)*(SCREEN_WIDTH-gridScaleX-p.lineWidth) + p.gridSize*float32(i)
+		for i := 0; i < o.width+1; i += 1 {
+			translateX := 1/float32(2)*(SCREEN_WIDTH-gridScaleX-o.lineWidth) + o.gridSize*float32(i)
 
 			matModel := mgl32.Translate2D(translateX, translateY).Mul3(mgl32.Scale2D(scaleX, scaleY))
 			matProjModel := renderer.Proj().Mul3(matModel)
@@ -43,12 +45,12 @@ func (p Grid) Render(renderer Renderer) {
 
 	// draw horizontal lines
 	{
-		scaleX := gridScaleX + p.lineWidth
-		scaleY := p.lineWidth
-		translateX := 1 / float32(2) * (SCREEN_WIDTH - gridScaleX - p.lineWidth)
+		scaleX := gridScaleX + o.lineWidth
+		scaleY := o.lineWidth
+		translateX := 1 / float32(2) * (SCREEN_WIDTH - gridScaleX - o.lineWidth)
 
-		for i := 0; i < p.height+1; i += 1 {
-			translateY := 1/float32(2)*(SCREEN_HEIGHT-gridScaleY-p.lineWidth) + p.gridSize*float32(i)
+		for i := 0; i < o.height+1; i += 1 {
+			translateY := 1/float32(2)*(SCREEN_HEIGHT-gridScaleY-o.lineWidth) + o.gridSize*float32(i)
 
 			matModel := mgl32.Translate2D(translateX, translateY).Mul3(mgl32.Scale2D(scaleX, scaleY))
 			matProjModel := renderer.Proj().Mul3(matModel)

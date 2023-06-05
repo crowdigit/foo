@@ -7,12 +7,14 @@ type Renderer interface {
 	Proj() mgl32.Mat3
 	Program() uint32
 	PVMUniformLoc() int32
+	ColorUniformLoc() int32
 }
 
 type RectRenderer struct {
-	vao           uint32
-	program       uint32
-	pvmUniformLoc int32
+	vao             uint32
+	program         uint32
+	pvmUniformLoc   int32
+	colorUniformLoc int32
 }
 
 func (r RectRenderer) VAO() uint32 {
@@ -33,4 +35,8 @@ func (r RectRenderer) Program() uint32 {
 
 func (r RectRenderer) PVMUniformLoc() int32 {
 	return r.pvmUniformLoc
+}
+
+func (r RectRenderer) ColorUniformLoc() int32 {
+	return r.colorUniformLoc
 }

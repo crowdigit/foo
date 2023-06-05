@@ -102,12 +102,23 @@ func main() {
 	}
 
 	gl.UseProgram(shader)
-	pvmUniformLoc := gl.GetUniformLocation(shader, gl.Str("ProjModel"+"\x00"))
+	pvmUniformLoc := gl.GetUniformLocation(shader, gl.Str("projModel"+"\x00"))
+	colorUniformLoc := gl.GetUniformLocation(shader, gl.Str("color"+"\x00"))
+
+	gl.Enable(gl.CULL_FACE)
+	gl.Enable(gl.DEPTH_TEST)
+	gl.DepthFunc(gl.LESS)
+
+	gl.ClearColor(0.0, 0.0, 0.0, 0.0)
+	gl.ClearDepth(1)
+
+	checkGLError()
 
 	renderer := RectRenderer{
-		vao:           vao,
-		program:       shader,
-		pvmUniformLoc: pvmUniformLoc,
+		vao:             vao,
+		program:         shader,
+		pvmUniformLoc:   pvmUniformLoc,
+		colorUniformLoc: colorUniformLoc,
 	}
 
 	running := true
@@ -135,8 +146,7 @@ func main() {
 			}
 		}
 
-		gl.ClearColor(0.0, 0.0, 0.0, 0.0)
-		gl.Clear(gl.COLOR_BUFFER_BIT)
+		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
 		for _, object := range objects {
 			object.Render(renderer)
