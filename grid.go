@@ -36,9 +36,10 @@ func (o Grid) Render(renderer Renderer) {
 		for i := 0; i < o.width+1; i += 1 {
 			translateX := 1/float32(2)*(SCREEN_WIDTH-gridScaleX-o.lineWidth) + o.gridSize*float32(i)
 
-			matModel := mgl32.Translate2D(translateX, translateY).Mul3(mgl32.Scale2D(scaleX, scaleY))
-			matProjModel := renderer.Proj().Mul3(matModel)
-			gl.UniformMatrix3fv(renderer.PVMUniformLoc(), 1, false, &matProjModel[0])
+			matModel := mgl32.Translate3D(translateX, translateY, OFFSET_Z_GRID).
+				Mul4(mgl32.Scale3D(scaleX, scaleY, 1))
+			matProjModel := renderer.Proj().Mul4(matModel)
+			gl.UniformMatrix4fv(renderer.PVMUniformLoc(), 1, false, &matProjModel[0])
 			gl.DrawArrays(gl.TRIANGLES, 0, 6)
 		}
 	}
@@ -52,10 +53,10 @@ func (o Grid) Render(renderer Renderer) {
 		for i := 0; i < o.height+1; i += 1 {
 			translateY := 1/float32(2)*(SCREEN_HEIGHT-gridScaleY-o.lineWidth) + o.gridSize*float32(i)
 
-			matModel := mgl32.Translate2D(translateX, translateY).Mul3(mgl32.Scale2D(scaleX, scaleY))
-			matProjModel := renderer.Proj().Mul3(matModel)
+			matModel := mgl32.Translate3D(translateX, translateY, OFFSET_Z_GRID).Mul4(mgl32.Scale3D(scaleX, scaleY, 1))
+			matProjModel := renderer.Proj().Mul4(matModel)
 
-			gl.UniformMatrix3fv(renderer.PVMUniformLoc(), 1, false, &matProjModel[0])
+			gl.UniformMatrix4fv(renderer.PVMUniformLoc(), 1, false, &matProjModel[0])
 			gl.DrawArrays(gl.TRIANGLES, 0, 6)
 		}
 	}

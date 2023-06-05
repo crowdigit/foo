@@ -6,9 +6,8 @@ import (
 )
 
 const (
-	POLYGON_OFFSET_PLAYER = 2
-	POLYGON_OFFSET_GRID   = 1
-	POLYGON_OFFSET_UNIT   = 1
+	OFFSET_Z_PLAYER = 1
+	OFFSET_Z_GRID   = 0
 )
 
 type Object interface {
@@ -39,13 +38,13 @@ func (p Player) Render(renderer Renderer) {
 	x := float32(p.x*MAP_GRID_SIZE + RENDER_CENTER_OFFSET_X)
 	y := float32(p.y*MAP_GRID_SIZE + RENDER_CENTER_OFFSET_Y)
 
-	matModel := mgl32.Translate2D(x, y).Mul3(mgl32.Scale2D(MAP_GRID_SIZE, MAP_GRID_SIZE))
-	matProjModel := renderer.Proj().Mul3(matModel)
+	matModel := mgl32.Translate3D(x, y, OFFSET_Z_PLAYER).Mul4(mgl32.Scale3D(MAP_GRID_SIZE, MAP_GRID_SIZE, 1))
+	matProjModel := renderer.Proj().Mul4(matModel)
 
 	r, g, b := normalizeColor(p.r, p.g, p.b)
 
 	gl.UseProgram(renderer.Program())
-	gl.UniformMatrix3fv(renderer.PVMUniformLoc(), 1, false, &matProjModel[0])
+	gl.UniformMatrix4fv(renderer.PVMUniformLoc(), 1, false, &matProjModel[0])
 	gl.Uniform3f(renderer.ColorUniformLoc(), r, g, b)
 
 	gl.DrawArrays(gl.TRIANGLES, 0, 6)

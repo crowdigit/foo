@@ -13,6 +13,7 @@ const (
 
 	SCREEN_WIDTH  = 800
 	SCREEN_HEIGHT = 600
+	SCREEN_DEPTH  = 1
 
 	MAP_WIDTH           = 10
 	MAP_HEIGHT          = 10
