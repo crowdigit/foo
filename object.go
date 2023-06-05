@@ -6,14 +6,11 @@ import (
 )
 
 type Object interface {
-	Position() (int, int)
 	Render(Renderer)
 }
 
 type Player struct {
-	x int
-	y int
-
+	x, y    int
 	r, g, b uint8
 	speed   int
 }

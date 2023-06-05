@@ -14,9 +14,10 @@ const (
 	SCREEN_WIDTH  = 800
 	SCREEN_HEIGHT = 600
 
-	MAP_WIDTH     = 10
-	MAP_HEIGHT    = 10
-	MAP_GRID_SIZE = 30
+	MAP_WIDTH           = 10
+	MAP_HEIGHT          = 10
+	MAP_GRID_SIZE       = 30
+	MAP_GRID_LINE_WIDTH = 3
 
 	RENDER_CENTER_OFFSET_X = SCREEN_WIDTH/2 - MAP_GRID_SIZE*MAP_WIDTH/2
 	RENDER_CENTER_OFFSET_Y = SCREEN_HEIGHT/2 - MAP_GRID_SIZE*MAP_HEIGHT/2
@@ -75,9 +76,16 @@ func main() {
 	}
 
 	player := Player{x: 0, y: 0, r: 0, g: 0, b: 255, speed: 1}
+	grid := Grid{
+		width: MAP_WIDTH, height: MAP_HEIGHT,
+		lineWidth: MAP_GRID_LINE_WIDTH,
+		r:         255, g: 255, b: 255,
+		gridSize: MAP_GRID_SIZE,
+	}
 	objects := map[string]Object{
 		"player":  &player,
 		"monster": Player{x: 6, y: 6, r: 255, g: 0, b: 0, speed: 1},
+		"grid":    grid,
 	}
 
 	// Define field grids
