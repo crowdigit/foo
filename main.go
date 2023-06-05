@@ -75,12 +75,10 @@ func main() {
 	}
 
 	player := Player{x: 0, y: 0, r: 0, g: 0, b: 255, speed: 1}
-	/*
-		objects := map[string]Object{
-			"player":  &player,
-			"monster": Player{x: 6, y: 6, r: 255, g: 0, b: 0, speed: 1},
-		}
-	*/
+	objects := map[string]Object{
+		"player":  &player,
+		"monster": Player{x: 6, y: 6, r: 255, g: 0, b: 0, speed: 1},
+	}
 
 	// Define field grids
 	fieldRects := make([]sdl.Rect, MAP_HEIGHT*MAP_WIDTH)
@@ -132,14 +130,10 @@ func main() {
 		gl.ClearColor(0.0, 0.0, 0.0, 0.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT)
 
-		player.Render(renderer)
+		for _, object := range objects {
+			object.Render(renderer)
+		}
 
 		window.GLSwap()
-
-		/*
-			for _, object := range objects {
-				object.Render(renderer)
-			}
-		*/
 	}
 }
