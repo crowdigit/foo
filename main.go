@@ -8,20 +8,9 @@ import (
 )
 
 const (
-	EMPTY  = 0
-	PLAYER = 1
-
-	SCREEN_WIDTH  = 800
-	SCREEN_HEIGHT = 600
+	SCREEN_WIDTH  = 1280
+	SCREEN_HEIGHT = 768
 	SCREEN_DEPTH  = 1
-
-	MAP_WIDTH           = 10
-	MAP_HEIGHT          = 10
-	MAP_GRID_SIZE       = 30
-	MAP_GRID_LINE_WIDTH = 3
-
-	RENDER_CENTER_OFFSET_X = SCREEN_WIDTH/2 - MAP_GRID_SIZE*MAP_WIDTH/2
-	RENDER_CENTER_OFFSET_Y = SCREEN_HEIGHT/2 - MAP_GRID_SIZE*MAP_HEIGHT/2
 )
 
 func checkGLError() {
@@ -76,32 +65,6 @@ func main() {
 		panic(err)
 	}
 
-	player := Player{x: 0, y: 0, r: 0, g: 0, b: 255, speed: 1}
-	grid := Grid{
-		width: MAP_WIDTH, height: MAP_HEIGHT,
-		lineWidth: MAP_GRID_LINE_WIDTH,
-		r:         255, g: 255, b: 255,
-		gridSize: MAP_GRID_SIZE,
-	}
-	objects := map[string]Object{
-		"player":  &player,
-		"monster": Player{x: 6, y: 6, r: 255, g: 0, b: 0, speed: 1},
-		"grid":    grid,
-	}
-
-	// Define field grids
-	fieldRects := make([]sdl.Rect, MAP_HEIGHT*MAP_WIDTH)
-	for i := 0; i < MAP_HEIGHT; i += 1 {
-		for j := 0; j < MAP_WIDTH; j += 1 {
-			fieldRects[i*MAP_WIDTH+j] = sdl.Rect{
-				X: int32(j)*MAP_GRID_SIZE + RENDER_CENTER_OFFSET_X,
-				Y: int32(i)*MAP_GRID_SIZE + RENDER_CENTER_OFFSET_Y,
-				W: MAP_GRID_SIZE,
-				H: MAP_GRID_SIZE,
-			}
-		}
-	}
-
 	gl.UseProgram(shader)
 	pvmUniformLoc := gl.GetUniformLocation(shader, gl.Str("projModel"+"\x00"))
 	colorUniformLoc := gl.GetUniformLocation(shader, gl.Str("color"+"\x00"))
@@ -113,13 +76,18 @@ func main() {
 	gl.ClearColor(0.0, 0.0, 0.0, 0.0)
 	gl.ClearDepth(1)
 
-	checkGLError()
-
-	renderer := RectRenderer{
+	renderer := RendererImpl{
 		vao:             vao,
 		program:         shader,
 		pvmUniformLoc:   pvmUniformLoc,
 		colorUniformLoc: colorUniformLoc,
+	}
+
+	objects := []Object{
+		Block{x: 0, y: 0, w: 400, h: 20},
+		Block{x: 400, y: 20, w: 400, h: 20},
+		Block{x: 800, y: 40, w: 400, h: 20},
+		Player{x: 0, y: 20, w: 20, h: 20},
 	}
 
 	running := true
@@ -132,16 +100,9 @@ func main() {
 			case *sdl.KeyboardEvent:
 				if event.Type == sdl.KEYDOWN {
 					switch event.Keysym.Scancode {
-					case sdl.SCANCODE_LEFT:
-						player.x = Max(player.x-1, 0)
-					case sdl.SCANCODE_RIGHT:
-						player.x = Min(player.x+1, MAP_WIDTH-1)
-					case sdl.SCANCODE_UP:
-						player.y = Min(player.y+1, MAP_HEIGHT-1)
-					case sdl.SCANCODE_DOWN:
-						player.y = Max(player.y-1, 0)
 					case sdl.SCANCODE_Q:
 						running = false
+						break
 					}
 				}
 			}
@@ -149,8 +110,8 @@ func main() {
 
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-		for _, object := range objects {
-			object.Render(renderer)
+		for _, block := range objects {
+			block.Render(renderer)
 		}
 
 		window.GLSwap()
