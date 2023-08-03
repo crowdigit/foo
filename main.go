@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/go-gl/gl/v3.3-core/gl"
+	"github.com/go-gl/mathgl/mgl32"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
@@ -83,11 +84,20 @@ func main() {
 		colorUniformLoc: colorUniformLoc,
 	}
 
+	player := Player{pos: mgl32.Vec2{0, 20}, size: mgl32.Vec2{20, 20}}
+
 	objects := []Object{
-		Block{x: 0, y: 0, w: 400, h: 20},
-		Block{x: 400, y: 20, w: 400, h: 20},
-		Block{x: 800, y: 40, w: 400, h: 20},
-		Player{x: 0, y: 20, w: 20, h: 20},
+		Block{pos: mgl32.Vec2{0, 0}, size: mgl32.Vec2{400, 20}},
+		Block{pos: mgl32.Vec2{400, 20}, size: mgl32.Vec2{400, 20}},
+		Block{pos: mgl32.Vec2{800, 40}, size: mgl32.Vec2{400, 20}},
+		&player,
+	}
+
+	blocks := make([]Object, 0, 10)
+	for _, object := range objects {
+		if _, ok := object.(Block); ok {
+			blocks = append(blocks, object)
+		}
 	}
 
 	running := true
@@ -108,10 +118,19 @@ func main() {
 			}
 		}
 
+		mov := mgl32.Vec2{1, 0}
+		player.prevPos = player.pos
+		player.pos = player.pos.Add(mov)
+
+		for _, block := range blocks {
+			if collides, _, _ := CheckCollision(player, block); collides {
+			}
+		}
+
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-		for _, block := range objects {
-			block.Render(renderer)
+		for _, object := range objects {
+			object.Render(renderer)
 		}
 
 		window.GLSwap()

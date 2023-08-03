@@ -45,13 +45,13 @@ func (r RendererImpl) ColorUniformLoc() int32 {
 	return r.colorUniformLoc
 }
 
-func DrawRectColor(renderer Renderer, x, y, w, h int, r, g, b uint8) {
+func DrawRectColor(renderer Renderer, pos, size mgl32.Vec2, r, g, b uint8) {
 	r_, g_, b_ := normalizeColor(r, g, b)
 
 	gl.BindVertexArray(renderer.VAO())
 
-	matModel := mgl32.Translate3D(float32(x), float32(y), OFFSET_Z_BLOCK).
-		Mul4(mgl32.Scale3D(float32(w), float32(h), 1))
+	matModel := mgl32.Translate3D(pos.X(), pos.Y(), OFFSET_Z_BLOCK).
+		Mul4(mgl32.Scale3D(size.X(), size.Y(), 1))
 	matProjModel := renderer.Proj().Mul4(matModel)
 
 	gl.UseProgram(renderer.Program())

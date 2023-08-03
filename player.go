@@ -1,14 +1,24 @@
 package main
 
+import "github.com/go-gl/mathgl/mgl32"
+
 type Player struct {
-	x, y int
-	w, h int
+	pos, prevPos mgl32.Vec2
+	size         mgl32.Vec2
 }
 
-func (p Player) Position() (int, int) {
-	return p.x, p.y
+func (p Player) Position() mgl32.Vec2 {
+	return p.pos
+}
+
+func (p Player) PrevPosition() mgl32.Vec2 {
+	return p.prevPos
+}
+
+func (p Player) Size() mgl32.Vec2 {
+	return p.size
 }
 
 func (p Player) Render(renderer Renderer) {
-	DrawRectColor(renderer, p.x, p.y, p.w, p.h, 0, 255, 0)
+	DrawRectColor(renderer, p.pos, p.size, 0, 255, 0)
 }
