@@ -84,12 +84,20 @@ func main() {
 		colorUniformLoc: colorUniformLoc,
 	}
 
-	player := &Player{pos: mgl32.Vec2{0, 20}, size: mgl32.Vec2{20, 20}}
+	space := false
+	left, right := false, false
+
+	player := &Player{
+		Touch: &TouchImpl{},
+		pos:   mgl32.Vec2{0, 60}, size: mgl32.Vec2{20, 20},
+	}
 
 	objects := []Object{
+		Block{pos: mgl32.Vec2{0, 80}, size: mgl32.Vec2{400, 20}},
 		Block{pos: mgl32.Vec2{0, 0}, size: mgl32.Vec2{400, 20}},
 		Block{pos: mgl32.Vec2{400, 20}, size: mgl32.Vec2{400, 20}},
-		Block{pos: mgl32.Vec2{800, 40}, size: mgl32.Vec2{400, 20}},
+		Block{pos: mgl32.Vec2{800, 40}, size: mgl32.Vec2{20, 100}},
+		Block{pos: mgl32.Vec2{820, 170}, size: mgl32.Vec2{400, 20}},
 		player,
 	}
 
@@ -99,9 +107,6 @@ func main() {
 			blocks = append(blocks, object)
 		}
 	}
-
-	mov := mgl32.Vec2{0, 0}
-	left, right, up, down := false, false, false, false
 
 	running := true
 	for running {
@@ -122,55 +127,57 @@ func main() {
 					case sdl.SCANCODE_RIGHT:
 						right = true
 						break
-					case sdl.SCANCODE_UP:
-						up = true
-						break
-					case sdl.SCANCODE_DOWN:
-						down = true
+					case sdl.SCANCODE_SPACE:
+						space = true
 						break
 					}
 				} else if event.Type == sdl.KEYUP {
 					switch event.Keysym.Scancode {
 					case sdl.SCANCODE_LEFT:
 						left = false
-						break
 					case sdl.SCANCODE_RIGHT:
 						right = false
-						break
-					case sdl.SCANCODE_UP:
-						up = false
-						break
-					case sdl.SCANCODE_DOWN:
-						down = false
-						break
+					case sdl.SCANCODE_SPACE:
+						space = false
 					}
 				}
 			}
 		}
 
-		mov = mgl32.Vec2{0, 0}
+		for _, block := range blocks {
+			if collides, _ := CheckCollision(player, block); collides {
+				ResolveCollision(player, block)
+			}
+		}
 
-		if left {
-			mov = mov.Add(mgl32.Vec2{-1, 0})
-		}
-		if right {
-			mov = mov.Add(mgl32.Vec2{1, 0})
-		}
-		if up {
-			mov = mov.Add(mgl32.Vec2{0, 1})
-		}
-		if down {
-			mov = mov.Add(mgl32.Vec2{0, -1})
+		force := player.Force()
+		force = force.Add(mgl32.Vec2{0, -0.098})
+
+		if player.TouchingFloor() {
+			if space {
+				force = force.Add(mgl32.Vec2{0, 5})
+			} else if left && right {
+				// do nothing
+			} else if left {
+				force[0] -= 0.1
+				force[0] = Max(force[0], -2)
+			} else if right {
+				force[0] += 0.1
+				force[0] = Min(force[0], 2)
+			} else if !left && !right {
+				if force[0] > 0 {
+					force[0] = Max(force[0]-0.08, 0)
+				} else {
+					force[0] = Min(force[0]+0.08, 0)
+				}
+			}
 		}
 
 		player.prevPos = player.pos
-		player.pos = player.pos.Add(mov)
+		player.force = force
+		player.pos = player.pos.Add(player.force)
 
-		for _, block := range blocks {
-			if collides, conflict := CheckCollision(player, block); collides {
-				ResolveCollision(player, block, conflict)
-			}
-		}
+		player.ResetTouch()
 
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
