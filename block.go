@@ -21,3 +21,5 @@ func (b Block) Size() mgl32.Vec2 {
 func (b Block) Render(renderer Renderer) {
 	DrawRectColor(renderer, b.pos, b.size, 255, 0, 0)
 }
+
+func (b Block) Move(mgl32.Vec2) {}

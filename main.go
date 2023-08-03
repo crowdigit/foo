@@ -84,13 +84,13 @@ func main() {
 		colorUniformLoc: colorUniformLoc,
 	}
 
-	player := Player{pos: mgl32.Vec2{0, 20}, size: mgl32.Vec2{20, 20}}
+	player := &Player{pos: mgl32.Vec2{0, 20}, size: mgl32.Vec2{20, 20}}
 
 	objects := []Object{
 		Block{pos: mgl32.Vec2{0, 0}, size: mgl32.Vec2{400, 20}},
 		Block{pos: mgl32.Vec2{400, 20}, size: mgl32.Vec2{400, 20}},
 		Block{pos: mgl32.Vec2{800, 40}, size: mgl32.Vec2{400, 20}},
-		&player,
+		player,
 	}
 
 	blocks := make([]Object, 0, 10)
@@ -99,6 +99,9 @@ func main() {
 			blocks = append(blocks, object)
 		}
 	}
+
+	mov := mgl32.Vec2{0, 0}
+	left, right, up, down := false, false, false, false
 
 	running := true
 	for running {
@@ -113,17 +116,59 @@ func main() {
 					case sdl.SCANCODE_Q:
 						running = false
 						break
+					case sdl.SCANCODE_LEFT:
+						left = true
+						break
+					case sdl.SCANCODE_RIGHT:
+						right = true
+						break
+					case sdl.SCANCODE_UP:
+						up = true
+						break
+					case sdl.SCANCODE_DOWN:
+						down = true
+						break
+					}
+				} else if event.Type == sdl.KEYUP {
+					switch event.Keysym.Scancode {
+					case sdl.SCANCODE_LEFT:
+						left = false
+						break
+					case sdl.SCANCODE_RIGHT:
+						right = false
+						break
+					case sdl.SCANCODE_UP:
+						up = false
+						break
+					case sdl.SCANCODE_DOWN:
+						down = false
+						break
 					}
 				}
 			}
 		}
 
-		mov := mgl32.Vec2{1, 0}
+		mov = mgl32.Vec2{0, 0}
+
+		if left {
+			mov = mov.Add(mgl32.Vec2{-1, 0})
+		}
+		if right {
+			mov = mov.Add(mgl32.Vec2{1, 0})
+		}
+		if up {
+			mov = mov.Add(mgl32.Vec2{0, 1})
+		}
+		if down {
+			mov = mov.Add(mgl32.Vec2{0, -1})
+		}
+
 		player.prevPos = player.pos
 		player.pos = player.pos.Add(mov)
 
 		for _, block := range blocks {
-			if collides, _, _ := CheckCollision(player, block); collides {
+			if collides, conflict := CheckCollision(player, block); collides {
+				ResolveCollision(player, block, conflict)
 			}
 		}
 
