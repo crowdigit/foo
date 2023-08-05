@@ -41,7 +41,7 @@ func (b *Block) UnmarshalJSON(bytes []byte) error {
 	}
 
 	b.pos = mgl32.Vec2{arr[0], arr[1]}
-	b.size = mgl32.Vec2{arr[0], arr[1]}
+	b.size = mgl32.Vec2{arr[2], arr[3]}
 
 	return nil
 }
