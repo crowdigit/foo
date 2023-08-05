@@ -123,16 +123,16 @@ func ResolveCollision(a DynamicObject, b Object) {
 		a.TouchCeiling()
 		return
 	} else if aPrevPos.X()+aSize.X() <= bPrevPos.X() {
-		// a was to the left of B
+		// a was to the left of b
 		a.SetPosition(mgl32.Vec2{bPos.X() - aSize.X(), aPos.Y()})
 		a.SetForce(mgl32.Vec2{0, a.Force().Y()})
-		a.TouchLeft()
+		a.TouchRight()
 		return
 	} else if aPrevPos.X() >= bPrevPos.X()+bSize.X() {
-		// a was to the right of B
-		a.SetPosition(mgl32.Vec2{bPos.X() + bSize.Y(), aPos.Y()})
+		// a was to the right of b
+		a.SetPosition(mgl32.Vec2{bPos.X() + bSize.X(), aPos.Y()})
 		a.SetForce(mgl32.Vec2{0, a.Force().Y()})
-		a.TouchRight()
+		a.TouchLeft()
 		return
 	}
 }
