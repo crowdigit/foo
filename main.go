@@ -1,10 +1,13 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
+	"github.com/pkg/errors"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
@@ -28,6 +31,20 @@ func checkGLError() {
 	default:
 		fmt.Println("unknown OpenGL error")
 	}
+}
+
+func loadScene(filepath string) (Scene, error) {
+	sceneBytes, err := os.ReadFile(filepath)
+	if err != nil {
+		return Scene{}, errors.Wrap(err, "failed to read scene file")
+	}
+
+	scene := Scene{}
+	if err := json.Unmarshal(sceneBytes, &scene); err != nil {
+		return Scene{}, errors.Wrap(err, "failed to unmarshal scene file into scene type")
+	}
+
+	return scene, nil
 }
 
 func main() {
@@ -77,6 +94,11 @@ func main() {
 	gl.ClearColor(0.0, 0.0, 0.0, 0.0)
 	gl.ClearDepth(1)
 
+	scene, err := loadScene("./data/scene_test.json")
+	if err != nil {
+		panic(err)
+	}
+
 	renderer := RendererImpl{
 		vao:             vao,
 		program:         shader,
@@ -90,22 +112,6 @@ func main() {
 	player := &Player{
 		Touch: &TouchImpl{},
 		pos:   mgl32.Vec2{0, 60}, size: mgl32.Vec2{20, 20},
-	}
-
-	objects := []Object{
-		Block{pos: mgl32.Vec2{0, 80}, size: mgl32.Vec2{400, 20}},
-		Block{pos: mgl32.Vec2{0, 0}, size: mgl32.Vec2{400, 20}},
-		Block{pos: mgl32.Vec2{400, 20}, size: mgl32.Vec2{400, 20}},
-		Block{pos: mgl32.Vec2{800, 40}, size: mgl32.Vec2{20, 100}},
-		Block{pos: mgl32.Vec2{820, 170}, size: mgl32.Vec2{400, 20}},
-		player,
-	}
-
-	blocks := make([]Object, 0, 10)
-	for _, object := range objects {
-		if _, ok := object.(Block); ok {
-			blocks = append(blocks, object)
-		}
 	}
 
 	running := true
@@ -144,7 +150,7 @@ func main() {
 			}
 		}
 
-		for _, block := range blocks {
+		for _, block := range scene.Blocks {
 			if collides, _ := CheckCollision(player, block); collides {
 				ResolveCollision(player, block)
 			}
@@ -181,9 +187,8 @@ func main() {
 
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-		for _, object := range objects {
-			object.Render(renderer)
-		}
+		player.Render(renderer)
+		scene.RenderBlocks(renderer)
 
 		window.GLSwap()
 	}
