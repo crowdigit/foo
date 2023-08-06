@@ -71,8 +71,7 @@ func main() {
 		colorUniformLoc: colorUniformLoc,
 	}
 
-	space := false
-	left, right := false, false
+	keyboard := &Keyboard{}
 
 	player := &Player{
 		Touch: &TouchImpl{},
@@ -87,31 +86,11 @@ func main() {
 				running = false
 				break
 			case *sdl.KeyboardEvent:
-				if event.Type == sdl.KEYDOWN {
-					switch event.Keysym.Scancode {
-					case sdl.SCANCODE_Q:
-						running = false
-						break
-					case sdl.SCANCODE_LEFT:
-						left = true
-						break
-					case sdl.SCANCODE_RIGHT:
-						right = true
-						break
-					case sdl.SCANCODE_SPACE:
-						space = true
-						break
-					}
-				} else if event.Type == sdl.KEYUP {
-					switch event.Keysym.Scancode {
-					case sdl.SCANCODE_LEFT:
-						left = false
-					case sdl.SCANCODE_RIGHT:
-						right = false
-					case sdl.SCANCODE_SPACE:
-						space = false
-					}
+				keyboard.Update(event)
+				if keyboard.Q {
+					running = false
 				}
+				break
 			}
 		}
 
@@ -125,17 +104,17 @@ func main() {
 		force = force.Add(mgl32.Vec2{0, -0.098})
 
 		if player.TouchingFloor() {
-			if space {
+			if keyboard.Space {
 				force = force.Add(mgl32.Vec2{0, 5})
-			} else if left && right {
+			} else if keyboard.Left && keyboard.Right {
 				// do nothing
-			} else if left {
+			} else if keyboard.Left {
 				force[0] -= 0.1
 				force[0] = Max(force[0], -2)
-			} else if right {
+			} else if keyboard.Right {
 				force[0] += 0.1
 				force[0] = Min(force[0], 2)
-			} else if !left && !right {
+			} else if !keyboard.Left && !keyboard.Right {
 				if force[0] > 0 {
 					force[0] = Max(force[0]-0.08, 0)
 				} else {
