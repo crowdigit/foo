@@ -71,7 +71,7 @@ func main() {
 		colorUniformLoc: colorUniformLoc,
 	}
 
-	keyboard := &Keyboard{}
+	keyboard := Keyboard{}
 
 	player := &Player{
 		Touch: &TouchImpl{},
@@ -100,34 +100,7 @@ func main() {
 			}
 		}
 
-		force := player.Force()
-		force = force.Add(mgl32.Vec2{0, -0.098})
-
-		if player.TouchingFloor() {
-			if keyboard.Space {
-				force = force.Add(mgl32.Vec2{0, 5})
-			} else if keyboard.Left && keyboard.Right {
-				// do nothing
-			} else if keyboard.Left {
-				force[0] -= 0.1
-				force[0] = Max(force[0], -2)
-			} else if keyboard.Right {
-				force[0] += 0.1
-				force[0] = Min(force[0], 2)
-			} else if !keyboard.Left && !keyboard.Right {
-				if force[0] > 0 {
-					force[0] = Max(force[0]-0.08, 0)
-				} else {
-					force[0] = Min(force[0]+0.08, 0)
-				}
-			}
-		}
-
-		player.prevPos = player.pos
-		player.force = force
-		player.pos = player.pos.Add(player.force)
-
-		player.ResetTouch()
+		player.Update(keyboard)
 
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
