@@ -66,13 +66,7 @@ func main() {
 			}
 		}
 
-		for _, block := range scene.Blocks {
-			if collides, _ := CheckCollision(player, block); collides {
-				ResolveCollision(player, block)
-			}
-		}
-
-		player.Update(keyboard)
+		player.Update(scene, keyboard)
 
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 

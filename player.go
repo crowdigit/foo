@@ -38,7 +38,13 @@ func (p *Player) SetForce(force mgl32.Vec2) {
 	p.force = force
 }
 
-func (p *Player) Update(keyboard Keyboard) {
+func (p *Player) Update(scene Scene, keyboard Keyboard) {
+	for _, block := range scene.Blocks {
+		if collides, _ := CheckCollision(p, block); collides {
+			ResolveCollision(p, block)
+		}
+	}
+
 	force := p.Force()
 
 	g := mgl32.Vec2{0, -0.098}
