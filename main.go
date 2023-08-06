@@ -25,8 +25,7 @@ func main() {
 	}
 	defer window.Destroy()
 
-	sdl.GLSetAttribute(sdl.GL_CONTEXT_MAJOR_VERSION, 3)
-	sdl.GLSetAttribute(sdl.GL_CONTEXT_MINOR_VERSION, 3)
+	configureOpenGL()
 
 	glContext, err := window.GLCreateContext()
 	if err != nil {
@@ -34,41 +33,14 @@ func main() {
 	}
 	defer sdl.GLDeleteContext(glContext)
 
-	if err := gl.Init(); err != nil {
-		panic(err)
-	}
-
-	shader, err := loadShader()
+	renderer, err := initRenderer()
 	if err != nil {
 		panic(err)
 	}
-
-	vao, err := initVAO()
-	if err != nil {
-		panic(err)
-	}
-
-	gl.UseProgram(shader)
-	pvmUniformLoc := gl.GetUniformLocation(shader, gl.Str("projModel"+"\x00"))
-	colorUniformLoc := gl.GetUniformLocation(shader, gl.Str("color"+"\x00"))
-
-	gl.Enable(gl.CULL_FACE)
-	gl.Enable(gl.DEPTH_TEST)
-	gl.DepthFunc(gl.LESS)
-
-	gl.ClearColor(0.0, 0.0, 0.0, 0.0)
-	gl.ClearDepth(1)
 
 	scene, err := loadScene("./data/scene_test.json")
 	if err != nil {
 		panic(err)
-	}
-
-	renderer := RendererImpl{
-		vao:             vao,
-		program:         shader,
-		pvmUniformLoc:   pvmUniformLoc,
-		colorUniformLoc: colorUniformLoc,
 	}
 
 	keyboard := Keyboard{}

@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/pkg/errors"
+	"github.com/veandco/go-sdl2/sdl"
 )
 
 func Min(a, b float32) float32 {
@@ -51,4 +52,43 @@ func loadScene(filepath string) (Scene, error) {
 	}
 
 	return scene, nil
+}
+
+func configureOpenGL() {
+	sdl.GLSetAttribute(sdl.GL_CONTEXT_MAJOR_VERSION, 3)
+	sdl.GLSetAttribute(sdl.GL_CONTEXT_MINOR_VERSION, 3)
+}
+
+func initRenderer() (Renderer, error) {
+	if err := gl.Init(); err != nil {
+		return nil, errors.Wrap(err, "failed to initialize OpenGL")
+	}
+
+	shader, err := loadShader()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to load shader")
+	}
+
+	vao, err := initVAO()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to initialize VAO")
+	}
+
+	gl.UseProgram(shader)
+	pvmUniformLoc := gl.GetUniformLocation(shader, gl.Str("projModel"+"\x00"))
+	colorUniformLoc := gl.GetUniformLocation(shader, gl.Str("color"+"\x00"))
+
+	gl.Enable(gl.CULL_FACE)
+	gl.Enable(gl.DEPTH_TEST)
+	gl.DepthFunc(gl.LESS)
+
+	gl.ClearColor(0.0, 0.0, 0.0, 0.0)
+	gl.ClearDepth(1)
+
+	return RendererImpl{
+		vao:             vao,
+		program:         shader,
+		pvmUniformLoc:   pvmUniformLoc,
+		colorUniformLoc: colorUniformLoc,
+	}, nil
 }
