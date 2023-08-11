@@ -50,26 +50,26 @@ func (p *Player) Update(scene Scene, keyboard Keyboard) {
 
 	force := p.Force()
 
-	g := mgl32.Vec2{0, -0.098}
-	force = force.Add(g)
+	gravity := mgl32.Vec2{0, -0.098}
+	force = force.Add(gravity)
+
+	const friction float32 = 0.08
+	const accel float32 = 0.1
+	const accelLimit float32 = 2
 
 	if p.TouchingFloor() {
 		if keyboard[sdl.SCANCODE_SPACE].Press {
 			force = force.Add(mgl32.Vec2{0, 5})
-		} else if keyboard[sdl.SCANCODE_LEFT].Press && keyboard[sdl.SCANCODE_RIGHT].Press {
-			// do nothing
-		} else if keyboard[sdl.SCANCODE_LEFT].Press {
-			force[0] -= 0.1
-			force[0] = Max(force[0], -2)
-		} else if keyboard[sdl.SCANCODE_RIGHT].Press {
-			force[0] += 0.1
-			force[0] = Min(force[0], 2)
-		} else if !keyboard[sdl.SCANCODE_LEFT].Press && !keyboard[sdl.SCANCODE_RIGHT].Press {
+		} else if keyboard[sdl.SCANCODE_LEFT].Press == keyboard[sdl.SCANCODE_RIGHT].Press {
 			if force[0] > 0 {
-				force[0] = Max(force[0]-0.08, 0)
+				force[0] = Max(force[0]-friction, 0)
 			} else {
-				force[0] = Min(force[0]+0.08, 0)
+				force[0] = Min(force[0]+friction, 0)
 			}
+		} else if keyboard[sdl.SCANCODE_LEFT].Press {
+			force[0] = Max(force[0]-accel, -accelLimit)
+		} else if keyboard[sdl.SCANCODE_RIGHT].Press {
+			force[0] = Min(force[0]+accel, accelLimit)
 		}
 	}
 
