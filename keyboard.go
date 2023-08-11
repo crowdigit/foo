@@ -2,37 +2,14 @@ package main
 
 import "github.com/veandco/go-sdl2/sdl"
 
-type Keyboard struct {
-	Q bool
-
-	Left, Right bool
-	Space       bool
+type Key struct {
+	Press     bool
+	Timestamp uint32
 }
 
-func (k *Keyboard) Update(event *sdl.KeyboardEvent) {
-	if event.Type == sdl.KEYDOWN {
-		switch event.Keysym.Scancode {
-		case sdl.SCANCODE_Q:
-			k.Q = true
-			break
-		case sdl.SCANCODE_LEFT:
-			k.Left = true
-			break
-		case sdl.SCANCODE_RIGHT:
-			k.Right = true
-			break
-		case sdl.SCANCODE_SPACE:
-			k.Space = true
-			break
-		}
-	} else if event.Type == sdl.KEYUP {
-		switch event.Keysym.Scancode {
-		case sdl.SCANCODE_LEFT:
-			k.Left = false
-		case sdl.SCANCODE_RIGHT:
-			k.Right = false
-		case sdl.SCANCODE_SPACE:
-			k.Space = false
-		}
-	}
+func (k *Key) Update(event *sdl.KeyboardEvent) {
+	k.Press = event.Type == sdl.KEYDOWN
+	k.Timestamp = event.Timestamp
 }
+
+type Keyboard [512]Key

@@ -1,6 +1,9 @@
 package main
 
-import "github.com/go-gl/mathgl/mgl32"
+import (
+	"github.com/go-gl/mathgl/mgl32"
+	"github.com/veandco/go-sdl2/sdl"
+)
 
 type Player struct {
 	Touch
@@ -51,17 +54,17 @@ func (p *Player) Update(scene Scene, keyboard Keyboard) {
 	force = force.Add(g)
 
 	if p.TouchingFloor() {
-		if keyboard.Space {
+		if keyboard[sdl.SCANCODE_SPACE].Press {
 			force = force.Add(mgl32.Vec2{0, 5})
-		} else if keyboard.Left && keyboard.Right {
+		} else if keyboard[sdl.SCANCODE_LEFT].Press && keyboard[sdl.SCANCODE_RIGHT].Press {
 			// do nothing
-		} else if keyboard.Left {
+		} else if keyboard[sdl.SCANCODE_LEFT].Press {
 			force[0] -= 0.1
 			force[0] = Max(force[0], -2)
-		} else if keyboard.Right {
+		} else if keyboard[sdl.SCANCODE_RIGHT].Press {
 			force[0] += 0.1
 			force[0] = Min(force[0], 2)
-		} else if !keyboard.Left && !keyboard.Right {
+		} else if !keyboard[sdl.SCANCODE_LEFT].Press && !keyboard[sdl.SCANCODE_RIGHT].Press {
 			if force[0] > 0 {
 				force[0] = Max(force[0]-0.08, 0)
 			} else {

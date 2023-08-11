@@ -58,8 +58,8 @@ func main() {
 				running = false
 				break
 			case *sdl.KeyboardEvent:
-				keyboard.Update(event)
-				if keyboard.Q {
+				keyboard[event.Keysym.Scancode].Update(event)
+				if keyboard[sdl.SCANCODE_Q].Press {
 					running = false
 				}
 				break
