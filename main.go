@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
+	"github.com/veandco/go-sdl2/img"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
@@ -17,6 +18,11 @@ func main() {
 		panic(err)
 	}
 	defer sdl.Quit()
+
+	if err := img.Init(img.INIT_PNG); err != nil {
+		panic(err)
+	}
+	defer img.Quit()
 
 	window, err := sdl.CreateWindow("test", sdl.WINDOWPOS_UNDEFINED,
 		sdl.WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, sdl.WINDOW_SHOWN|sdl.WINDOW_OPENGL)
@@ -33,10 +39,32 @@ func main() {
 	}
 	defer sdl.GLDeleteContext(glContext)
 
-	renderer, err := initRenderer()
+	if err := gl.Init(); err != nil {
+		panic(err)
+	}
+
+	gl.Enable(gl.CULL_FACE)
+	gl.Enable(gl.DEPTH_TEST)
+	gl.DepthFunc(gl.LESS)
+
+	gl.ClearColor(0.0, 0.0, 0.0, 0.0)
+	gl.ClearDepth(1)
+
+	colorRenderer, err := newColorRenderer()
 	if err != nil {
 		panic(err)
 	}
+
+	textureRenderer, err := newTextureRenderer()
+	if err != nil {
+		panic(err)
+	}
+
+	texId, err := loadTexture("./data/player.png")
+	if err != nil {
+		panic(err)
+	}
+	defer gl.DeleteTextures(1, &texId)
 
 	scene, err := loadScene("./data/scene_test.json")
 	if err != nil {
@@ -47,7 +75,9 @@ func main() {
 
 	player := &Player{
 		Touch: &TouchImpl{},
-		pos:   mgl32.Vec2{0, 60}, size: mgl32.Vec2{20, 20},
+		pos:   mgl32.Vec2{0, 60},
+		size:  mgl32.Vec2{20, 20},
+		texId: texId,
 	}
 
 	running := true
@@ -70,8 +100,8 @@ func main() {
 
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-		player.Render(renderer)
-		scene.RenderBlocks(renderer)
+		player.Render(textureRenderer)
+		scene.RenderBlocks(colorRenderer)
 
 		window.GLSwap()
 	}

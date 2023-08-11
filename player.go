@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/veandco/go-sdl2/sdl"
 )
@@ -11,6 +12,8 @@ type Player struct {
 	pos, prevPos mgl32.Vec2
 	size         mgl32.Vec2
 	force        mgl32.Vec2
+
+	texId uint32
 }
 
 func (p *Player) Position() mgl32.Vec2 {
@@ -25,8 +28,23 @@ func (p *Player) Size() mgl32.Vec2 {
 	return p.size
 }
 
-func (p *Player) Render(renderer Renderer) {
-	DrawRectColor(renderer, p.pos, p.size, 0, 255, 0)
+func (p *Player) Render(renderer RectRenderer) {
+	if renderer, ok := renderer.(TextureRenderer); ok {
+		gl.BindVertexArray(renderer.VAO())
+
+		matModel := mgl32.Translate3D(p.pos.X(), p.pos.Y(), OFFSET_Z_BLOCK).
+			Mul4(mgl32.Scale3D(p.size.X(), p.size.Y(), 1))
+		matProjModel := renderer.Proj().Mul4(matModel)
+
+		gl.UseProgram(renderer.Program())
+		gl.UniformMatrix4fv(renderer.PVMUniformLoc(), 1, false, &matProjModel[0])
+
+		gl.BindTexture(gl.TEXTURE_2D, p.texId)
+
+		gl.DrawArrays(gl.TRIANGLES, 0, 6)
+
+		gl.BindVertexArray(0)
+	}
 }
 
 func (p *Player) SetPosition(pos mgl32.Vec2) {

@@ -8,11 +8,17 @@ import (
 	"github.com/pkg/errors"
 )
 
+//go:embed shader/colorRect.glsl
+var colorVertSource string
+
+//go:embed shader/colorFrag.glsl
+var colorFragSource string
+
 //go:embed shader/rect.glsl
-var vertSource string
+var textureVertSource string
 
 //go:embed shader/frag.glsl
-var fragSource string
+var textureFragSource string
 
 func compileShaderSource(source string, xtype uint32) (uint32, error) {
 	shader := gl.CreateShader(xtype)
@@ -67,20 +73,20 @@ func linkProgram(vertShader, fragShader uint32) (uint32, error) {
 	return program, nil
 }
 
-func loadShader() (uint32, error) {
-	vertShader, err := compileShaderSource(vertSource, gl.VERTEX_SHADER)
+func loadShader(vertShader, fragShader string) (uint32, error) {
+	colorVertShader, err := compileShaderSource(vertShader, gl.VERTEX_SHADER)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to compile vertex shader source")
 	}
-	defer gl.DeleteShader(vertShader)
+	defer gl.DeleteShader(colorVertShader)
 
-	fragShader, err := compileShaderSource(fragSource, gl.FRAGMENT_SHADER)
+	colorFragShader, err := compileShaderSource(fragShader, gl.FRAGMENT_SHADER)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to compile fragment shader source")
 	}
-	defer gl.DeleteShader(fragShader)
+	defer gl.DeleteShader(colorFragShader)
 
-	program, err := linkProgram(vertShader, fragShader)
+	program, err := linkProgram(colorVertShader, colorFragShader)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to link shaders")
 	}

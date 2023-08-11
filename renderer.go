@@ -5,26 +5,44 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 )
 
-type Renderer interface {
+type RectRenderer interface {
 	VAO() uint32
 	Proj() mgl32.Mat4
 	Program() uint32
 	PVMUniformLoc() int32
+}
+
+type RectRendererImpl struct {
+	vao           uint32
+	program       uint32
+	pvmUniformLoc int32
+}
+
+type ColorRenderer interface {
+	RectRenderer
 	ColorUniformLoc() int32
 }
 
-type RendererImpl struct {
-	vao             uint32
-	program         uint32
-	pvmUniformLoc   int32
+type ColorRendererImpl struct {
+	RectRendererImpl
 	colorUniformLoc int32
 }
 
-func (r RendererImpl) VAO() uint32 {
+type TextureRenderer interface {
+	RectRenderer
+	SamplerLoc() int32
+}
+
+type TextureRendererImpl struct {
+	RectRendererImpl
+	samplerUniformLoc int32
+}
+
+func (r RectRendererImpl) VAO() uint32 {
 	return r.vao
 }
 
-func (r RendererImpl) Proj() mgl32.Mat4 {
+func (r RectRendererImpl) Proj() mgl32.Mat4 {
 	return mgl32.Mat4{
 		2.0 / SCREEN_WIDTH, 0, 0, 0,
 		0, 2.0 / SCREEN_HEIGHT, 0, 0,
@@ -33,19 +51,23 @@ func (r RendererImpl) Proj() mgl32.Mat4 {
 	}
 }
 
-func (r RendererImpl) Program() uint32 {
+func (r RectRendererImpl) Program() uint32 {
 	return r.program
 }
 
-func (r RendererImpl) PVMUniformLoc() int32 {
+func (r RectRendererImpl) PVMUniformLoc() int32 {
 	return r.pvmUniformLoc
 }
 
-func (r RendererImpl) ColorUniformLoc() int32 {
+func (r ColorRendererImpl) ColorUniformLoc() int32 {
 	return r.colorUniformLoc
 }
 
-func DrawRectColor(renderer Renderer, pos, size mgl32.Vec2, r, g, b uint8) {
+func (r TextureRendererImpl) SamplerLoc() int32 {
+	return r.samplerUniformLoc
+}
+
+func DrawRectColor(renderer ColorRenderer, pos, size mgl32.Vec2, r, g, b uint8) {
 	r_, g_, b_ := normalizeColor(r, g, b)
 
 	gl.BindVertexArray(renderer.VAO())

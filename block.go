@@ -27,8 +27,10 @@ func (b Block) Size() mgl32.Vec2 {
 }
 
 // Render implements main.Object
-func (b Block) Render(renderer Renderer) {
-	DrawRectColor(renderer, b.pos, b.size, 255, 0, 0)
+func (b Block) Render(renderer RectRenderer) {
+	if renderer, ok := renderer.(ColorRenderer); ok {
+		DrawRectColor(renderer, b.pos, b.size, 255, 0, 0)
+	}
 }
 
 // UnmarshalJSON implements json.Unmarshaler

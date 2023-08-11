@@ -10,7 +10,7 @@ const (
 )
 
 type Object interface {
-	Render(Renderer)
+	Render(RectRenderer)
 
 	Position() mgl32.Vec2
 	PrevPosition() mgl32.Vec2
