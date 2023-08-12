@@ -9,16 +9,16 @@ import (
 )
 
 //go:embed colorRect.glsl
-var ColorVertSource string
+var colorVertSource string
 
 //go:embed colorFrag.glsl
-var ColorFragSource string
+var colorFragSource string
 
 //go:embed rect.glsl
-var TextureVertSource string
+var textureVertSource string
 
 //go:embed frag.glsl
-var TextureFragSource string
+var textureFragSource string
 
 func compileShaderSource(source string, xtype uint32) (uint32, error) {
 	shader := gl.CreateShader(xtype)
@@ -73,7 +73,7 @@ func linkProgram(vertShader, fragShader uint32) (uint32, error) {
 	return program, nil
 }
 
-func LoadShader(vertShader, fragShader string) (uint32, error) {
+func loadShader(vertShader, fragShader string) (uint32, error) {
 	colorVertShader, err := compileShaderSource(vertShader, gl.VERTEX_SHADER)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to compile vertex shader source")
@@ -94,33 +94,38 @@ func LoadShader(vertShader, fragShader string) (uint32, error) {
 	return program, nil
 }
 
-func InitVAO() (uint32, error) {
-	var vao uint32
-	gl.GenVertexArrays(1, &vao)
-	if vao == gl.INVALID_VALUE {
-		return 0, errors.New("failed to create VAO")
+func LoadColorShader(parameter Parameter) (ColorProgramImpl, error) {
+	id, err := loadShader(colorVertSource, colorFragSource)
+	if err != nil {
+		return ColorProgramImpl{}, errors.Wrap(err, "failed to load shader")
 	}
 
-	gl.BindVertexArray(vao)
+	gl.UseProgram(id)
+	pvmUniformLoc := gl.GetUniformLocation(id, gl.Str("projModel"+"\x00"))
+	colorUniformLoc := gl.GetUniformLocation(id, gl.Str("color"+"\x00"))
 
-	var vbo uint32
-	gl.GenBuffers(1, &vbo)
-	if vbo == gl.INVALID_VALUE {
-		return 0, errors.New("failed to create VBO")
+	return ColorProgramImpl{
+		parameter:       parameter,
+		id:              id,
+		pvmUniformLoc:   pvmUniformLoc,
+		colorUniformLoc: colorUniformLoc,
+	}, nil
+}
+
+func LoadTextureShader(parameter Parameter) (TextureProgramImpl, error) {
+	id, err := loadShader(textureVertSource, textureFragSource)
+	if err != nil {
+		return TextureProgramImpl{}, errors.Wrap(err, "failed to load shader")
 	}
 
-	vertices := []float32{
-		0.0, 0.0, 1.0, 0.0, 0.0, 1.0,
-		1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
-	}
-	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
-	gl.BufferData(gl.ARRAY_BUFFER, len(vertices)*4, gl.Ptr(vertices), gl.STATIC_DRAW)
+	gl.UseProgram(id)
+	pvmUniformLoc := gl.GetUniformLocation(id, gl.Str("projModel"+"\x00"))
+	samplerUniformLoc := gl.GetUniformLocation(id, gl.Str("sampler"+"\x00"))
 
-	gl.VertexAttribPointerWithOffset(0, 2, gl.FLOAT, false, 2*4, 0)
-	gl.EnableVertexAttribArray(0)
-
-	gl.BindVertexArray(0)
-	gl.BindBuffer(gl.ARRAY_BUFFER, 0)
-
-	return vao, nil
+	return TextureProgramImpl{
+		parameter:         parameter,
+		id:                id,
+		pvmUniformLoc:     pvmUniformLoc,
+		samplerUniformLoc: samplerUniformLoc,
+	}, nil
 }

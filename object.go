@@ -10,7 +10,7 @@ const (
 )
 
 type Object interface {
-	Render(RectRenderer)
+	Render(Renderer)
 
 	Position() mgl32.Vec2
 	PrevPosition() mgl32.Vec2
@@ -135,12 +135,4 @@ func ResolveCollision(a DynamicObject, b Object) {
 		a.TouchLeft()
 		return
 	}
-}
-
-func normalizeUint8(a uint8) float32 {
-	return float32(a) / 256
-}
-
-func normalizeColor(r, g, b uint8) (float32, float32, float32) {
-	return normalizeUint8(r), normalizeUint8(g), normalizeUint8(b)
 }

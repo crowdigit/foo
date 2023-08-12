@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/crowdigit/foo/shader"
 	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/veandco/go-sdl2/img"
@@ -12,6 +13,26 @@ const (
 	SCREEN_HEIGHT = 768
 	SCREEN_DEPTH  = 1
 )
+
+type RenderParameter struct {
+	screenWidth  int
+	screenHeight int
+	screenDepth  int
+	vao          uint32
+}
+
+func (p RenderParameter) Proj() mgl32.Mat4 {
+	return mgl32.Mat4{
+		2.0 / float32(p.screenWidth), 0, 0, 0,
+		0, 2.0 / float32(p.screenHeight), 0, 0,
+		0, 0, float32(p.screenDepth), 0,
+		-1, -1, -1, 1,
+	}
+}
+
+func (p RenderParameter) VAO() uint32 {
+	return p.vao
+}
 
 func main() {
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
@@ -50,21 +71,38 @@ func main() {
 	gl.ClearColor(0.0, 0.0, 0.0, 0.0)
 	gl.ClearDepth(1)
 
-	colorRenderer, err := newColorRenderer()
+	vao, err := initVAO()
 	if err != nil {
 		panic(err)
 	}
 
-	textureRenderer, err := newTextureRenderer()
+	renderParameter := RenderParameter{
+		screenWidth:  SCREEN_WIDTH,
+		screenHeight: SCREEN_HEIGHT,
+		screenDepth:  SCREEN_DEPTH,
+		vao:          vao,
+	}
+
+	colorProgram, err := shader.LoadColorShader(renderParameter)
 	if err != nil {
 		panic(err)
 	}
 
-	texId, err := loadTexture("./data/player.png")
+	textureProgram, err := shader.LoadTextureShader(renderParameter)
 	if err != nil {
 		panic(err)
 	}
-	defer gl.DeleteTextures(1, &texId)
+
+	renderer := RendererImpl{
+		ColorProgram:   colorProgram,
+		TextureProgram: textureProgram,
+	}
+
+	texID, err := loadTexture("./data/player.png")
+	if err != nil {
+		panic(err)
+	}
+	defer gl.DeleteTextures(1, &texID)
 
 	scene, err := loadScene("./data/scene_test.json")
 	if err != nil {
@@ -77,7 +115,7 @@ func main() {
 		Touch: &TouchImpl{},
 		pos:   mgl32.Vec2{0, 60},
 		size:  mgl32.Vec2{20, 20},
-		texId: texId,
+		texID: texID,
 	}
 
 	running := true
@@ -100,8 +138,8 @@ func main() {
 
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-		player.Render(textureRenderer)
-		scene.RenderBlocks(colorRenderer)
+		player.Render(renderer)
+		scene.RenderBlocks(renderer)
 
 		window.GLSwap()
 	}
