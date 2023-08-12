@@ -6,6 +6,7 @@ import (
 	"os"
 	"unsafe"
 
+	"github.com/crowdigit/foo/shader"
 	"github.com/go-gl/gl/v3.3-core/gl"
 	"github.com/pkg/errors"
 	"github.com/veandco/go-sdl2/img"
@@ -62,7 +63,7 @@ func configureOpenGL() {
 }
 
 func initShader(vertShader, fragShader string) (uint32, error) {
-	shader, err := loadShader(vertShader, fragShader)
+	shader, err := shader.LoadShader(vertShader, fragShader)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to load vertex shader")
 	}
@@ -70,12 +71,12 @@ func initShader(vertShader, fragShader string) (uint32, error) {
 }
 
 func newColorRenderer() (ColorRendererImpl, error) {
-	colorShader, err := loadShader(colorVertSource, colorFragSource)
+	colorShader, err := shader.LoadShader(shader.ColorVertSource, shader.ColorFragSource)
 	if err != nil {
 		return ColorRendererImpl{}, errors.Wrap(err, "failed to load shader")
 	}
 
-	vao, err := initVAO()
+	vao, err := shader.InitVAO()
 	if err != nil {
 		return ColorRendererImpl{}, errors.Wrap(err, "failed to initialize VAO")
 	}
@@ -95,12 +96,12 @@ func newColorRenderer() (ColorRendererImpl, error) {
 }
 
 func newTextureRenderer() (TextureRendererImpl, error) {
-	textureShader, err := loadShader(textureVertSource, textureFragSource)
+	textureShader, err := shader.LoadShader(shader.TextureVertSource, shader.TextureFragSource)
 	if err != nil {
 		return TextureRendererImpl{}, errors.Wrap(err, "failed to load shader")
 	}
 
-	vao, err := initVAO()
+	vao, err := shader.InitVAO()
 	if err != nil {
 		return TextureRendererImpl{}, errors.Wrap(err, "failed to initialize VAO")
 	}

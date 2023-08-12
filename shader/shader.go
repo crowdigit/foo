@@ -1,4 +1,4 @@
-package main
+package shader
 
 import (
 	_ "embed"
@@ -8,17 +8,17 @@ import (
 	"github.com/pkg/errors"
 )
 
-//go:embed shader/colorRect.glsl
-var colorVertSource string
+//go:embed colorRect.glsl
+var ColorVertSource string
 
-//go:embed shader/colorFrag.glsl
-var colorFragSource string
+//go:embed colorFrag.glsl
+var ColorFragSource string
 
-//go:embed shader/rect.glsl
-var textureVertSource string
+//go:embed rect.glsl
+var TextureVertSource string
 
-//go:embed shader/frag.glsl
-var textureFragSource string
+//go:embed frag.glsl
+var TextureFragSource string
 
 func compileShaderSource(source string, xtype uint32) (uint32, error) {
 	shader := gl.CreateShader(xtype)
@@ -73,7 +73,7 @@ func linkProgram(vertShader, fragShader uint32) (uint32, error) {
 	return program, nil
 }
 
-func loadShader(vertShader, fragShader string) (uint32, error) {
+func LoadShader(vertShader, fragShader string) (uint32, error) {
 	colorVertShader, err := compileShaderSource(vertShader, gl.VERTEX_SHADER)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to compile vertex shader source")
@@ -94,7 +94,7 @@ func loadShader(vertShader, fragShader string) (uint32, error) {
 	return program, nil
 }
 
-func initVAO() (uint32, error) {
+func InitVAO() (uint32, error) {
 	var vao uint32
 	gl.GenVertexArrays(1, &vao)
 	if vao == gl.INVALID_VALUE {
